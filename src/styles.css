@@ -1,5 +1,4 @@
 @import 'https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css';
-@import 'https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css';
 
 body{
     margin-top:20px;
@@ -32,4 +31,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 a {
     color: #707070;
+}
+
+.container {
+    padding: 20px;
 }
