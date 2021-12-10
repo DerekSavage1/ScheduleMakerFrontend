@@ -177,11 +177,15 @@
             </div>
         </div>
     </div>
+    <!-- Loading alert -->
+    <div *ngIf="employees?.length == 0" class="alert alert-warning" role="alert" aria-hidden="true">
+        <h3 class="text-center text-warning">Loading Employees... Please wait</h3>
+    </div>
 
     <!-- No employees Alert -->
-    <div *ngIf="employees?.length == 0" class="alert alert-primary" role="alert" aria-hidden="true">
-        <h3 class="text-center text-muted">No employees found!</h3>
-    </div>
+    <!-- <div *ngIf="employees?.length == 0" class="alert alert-info" role="alert" aria-hidden="true">
+        <h3 class="text-center text-info">No employees found!</h3>
+    </div> -->
 
 
 </div>
