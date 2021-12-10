@@ -1,1 +1,187 @@
-<p>employee works!</p>
+
+<div class="container" id="main-container">
+    <div class="row">
+        <!-- cards -->
+        <div *ngFor="let employee of employees" class="col-md-6 col-xl-3">
+            <div class="card m-b-30">
+                <div class="card-body row">
+                    <div class="col-6">
+                        <a href=""><img src="{{employee?.imageUrl}}" alt="{{employee?.name}}'s profile picture" class="img-fluid rounded-circle w-60 thumbnail"></a>
+                    </div>
+                    <div class="col-6 card-title align-self-center mb-0">
+                        <h5>{{employee?.name}}</h5>
+                        <p class="m-0">{{employee?.jobTitle}}</p>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><i class="fa fa-envelope float-right"></i>Email : <a href="mailto:{{employee?.email}}">{{employee?.email}}</a></li>
+                    <li class="list-group-item"><i class="fa fa-phone float-right"></i>Phone : {{employee?.phone}}</li>
+                </ul>
+                <div class="card-body">
+                    <div class="float-right btn-group btn-group-sm">
+                        <a href="#" class="btn btn-primary tooltips" data-placement="top" data-toggle="tooltip" data-original-title="Edit" (click)="onOpenModal(employee,'edit')">
+                            <fa-icon [icon]="['fas','edit']"></fa-icon>
+                        </a>
+                        <a href="#" class="btn btn-secondary tooltips" data-placement="top" data-toggle="tooltip" data-original-title="Delete" (click)="onOpenModal(employee,'delete')">
+                            <fa-icon [icon]="['fas','trash']"></fa-icon>
+                        </a>
+                    </div>
+                    <ul class="social-links list-inline mb-0">
+                        <li class="list-inline-item"><a title="" data-placement="top" data-toggle="tooltip" class="tooltips" href="" data-original-title="Discord"><fa-icon [icon]="['fab','discord']"></fa-icon></a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true" aria-labelledby="modal-title">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete {{deleteEmployee?.name}}</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="deleteClose" type="reset" data-bs-dismiss="modal"> Cancel </button>
+                    <button class="btn btn-danger" type="submit" (click)="onDeleteEmployee(deleteEmployee)" data-bs-dismiss="modal"> Confirm </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" aria-labelledby="modal-title">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Edit {{updateEmployee?.name}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form #editForm="ngForm">
+
+                        <!-- name  -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                            <span class="input-group-text">Full Name</span>
+                            </div>
+                            <input type="text" ngModel="{{updateEmployee?.name}}" name="name" class="form-control" placeholder="Last" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Email</span>
+                            </div>
+                            <input type="email" ngModel="{{updateEmployee?.email}}" name="email" class="form-control" placeholder="name@example.com" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Job Title -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Job Title</span>
+                                </div>
+                            <input type="text" ngModel="{{updateEmployee?.jobTitle}}" name="jobTitle" class="form-control" placeholder="Software Engineer" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Phone</span>
+                                </div>
+                            <input type="text" ngModel="{{updateEmployee?.phone}}" name="phone" class="form-control" placeholder="(123) 456-7890" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Image Url -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Image Url</span>
+                                </div>
+                            <input type="text" ngModel="{{updateEmployee?.imageUrl}}" name="imageUrl" class="form-control" placeholder="google.com/image.jpg" aria-describedby="basic-addon2" required>
+                        </div>
+                        
+                        <!-- submit  -->
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" id="editFormClose"  type="reset" data-bs-dismiss="modal"> Cancel </button>
+                            <button (click)="onUpdateEmployee(updateEmployee?.id, editForm.value)" class="btn btn-success" data-bs-dismiss="modal"> Apply Changes </button>
+                        </div>
+
+                    </form>
+                </div>  <!-- Modal body --> 
+            </div> <!-- Modal Content --> 
+        </div> <!-- Modal dialog --> 
+    </div> <!-- Modal --> 
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true" aria-labelledby="modal-title">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Add employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                    <div class="modal-body">
+                        <form #addForm="ngForm" (ngSubmit)="onAddEmployee(addForm)">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                            <span class="input-group-text">Full Name</span>
+                            </div>
+                            <input type="text" ngModel name="name" class="form-control" placeholder="Last" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Email</span>
+                            </div>
+                            <input type="email" ngModel name="email" class="form-control" placeholder="name@example.com" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Job Title -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Job Title</span>
+                                </div>
+                            <input type="text" ngModel name="jobTitle" class="form-control" placeholder="Software Engineer" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Phone</span>
+                                </div>
+                            <input type="text" ngModel name="phone" class="form-control" placeholder="(123) 456-7890" aria-describedby="basic-addon2" required>
+                        </div>
+
+                        <!-- Image Url -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2">Image Url</span>
+                                </div>
+                            <input type="text" ngModel name="imageUrl" class="form-control" placeholder="google.com/image.jpg" aria-describedby="basic-addon2" required>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button [disabled]="addForm.invalid" class="btn btn-success" type="submit" data-bs-dismiss="modal"> Add Employee </button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal"> Cancel </button>
+                        </div>
+
+                        </form>
+                    </div>  
+            </div>
+        </div>
+    </div>
+
+    <!-- No employees Alert -->
+    <div *ngIf="employees?.length == 0" class="alert alert-primary" role="alert" aria-hidden="true">
+        <h3 class="text-center text-muted">No employees found!</h3>
+    </div>
+
+
+</div>
