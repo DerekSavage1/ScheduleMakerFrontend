@@ -10,12 +10,16 @@ import { FormsModule } from '@angular/forms';
 import { EmployeeComponent } from './employee/employee.component';
 import { appRoutingModule } from './app.routing';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { StockComponent } from './stock/stock.component';
+import { ScheduleComponent } from './schedule/schedule.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     EmployeeComponent,
-    DashboardComponent
+    DashboardComponent,
+    StockComponent,
+    ScheduleComponent
   ],
   imports: [
     BrowserModule,
