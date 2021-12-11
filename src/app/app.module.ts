@@ -30,9 +30,7 @@ import { ScheduleComponent } from './schedule/schedule.component';
   ],
   providers: [],
   bootstrap: [
-    AppComponent,
-    EmployeeComponent,
-    DashboardComponent
+    AppComponent
   ]
 })
 export class AppModule {

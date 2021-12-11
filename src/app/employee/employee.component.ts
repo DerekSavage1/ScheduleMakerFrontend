@@ -19,7 +19,7 @@ export class EmployeeComponent implements OnInit{
   public updateEmployee: Employee | undefined;
 
 
-  public employees: Employee[] = [];
+  public employees: Employee[] | undefined;
   
   constructor(private employeeService: EmployeeService){}
 
