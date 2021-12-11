@@ -1,5 +1,11 @@
 
 <div class="container" id="main-container">
+
+    <div class="card p-2">
+        <h1 class="display text-center">Welcome to the Dashboard</h1>
+        <button type="button" class="btn btn-success" (click)="onOpenModal(null,'add')">Add Employee</button>
+    </div>
+
     <div class="row">
         <!-- cards -->
         <div *ngFor="let employee of employees" class="col-md-6 col-xl-3">

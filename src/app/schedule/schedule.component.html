@@ -6,123 +6,29 @@
     
 
     <div class="row">
-        <div class="card col-12 p-4 ">
+        <div class="card col-12 p-4">
             <div class="card-block">
-                <div class="btn-group-vertical col-auto">
+                <div class="btn-group-vertical col-auto align-bottom">
 
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 10:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 11:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 12:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 1:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 2:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 3:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 4:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 5:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 6:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 7:00 </button>
-                    <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> 8:00 </button>
+                    <!-- Times label -->
+                    <button *ngFor="let time of times" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{time}} </button>
 
                 </div>
-                
+
                 <div class="btn-group-vertical col-10">
+                    
+                    
+                    <!-- Employees names label -->
                     <div class="btn-group" role="group">
-                        <button  type="button" class="btn {{buttonType}}" style="min-height: 40px;" (click)="onClickSchedule()"></button>
+                        <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{employee.name}} </button>
                     </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" style="min-height: 40px;"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
-                        <button type="button" class="btn btn-outline-secondary"></button>
+
+                    <!-- Buttons for times  -->
+                    <div *ngFor="let time of times" class="btn-group" role="group">
+                        <button *ngFor="let employee of employees" type="button" class="btn border-dark" (click)="onClickSchedule(employee,time)" id="{{employee.id}}-{{time}}"></button>
                     </div>
                 </div>
             </div>
-            
-
-
         </div>
     </div>
 </div>
