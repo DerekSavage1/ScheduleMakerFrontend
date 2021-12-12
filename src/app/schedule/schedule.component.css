@@ -2,3 +2,7 @@ button {
     min-height: 40px;
     box-shadow: none;
 }
+
+body {
+    background-color: 0xff0000;
+}
