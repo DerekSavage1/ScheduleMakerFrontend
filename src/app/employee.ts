@@ -6,4 +6,6 @@ export interface Employee {
     phone: string;
     imageUrl: string;
     color: string;
+    shiftStart: number | null;
+    shiftEnd: number | null;
 }

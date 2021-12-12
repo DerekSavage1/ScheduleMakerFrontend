@@ -1,11 +1,7 @@
-import { style } from '@angular/animations';
-import { Time } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { SelectMultipleControlValueAccessor } from '@angular/forms';
 import { Employee } from '../employee';
 import { EmployeeService } from '../employee.service';
-import { ScheduleMap } from './scheduleMap';
 
 @Component({
   selector: 'app-schedule',
@@ -18,17 +14,39 @@ export class ScheduleComponent implements OnInit {
   public nav2Active: String = "";
   public employees: Employee[] | undefined;
   public timeInterval: number = .5;
-
-  public scheduleMap: ScheduleMap[] = [];
-
-  //row
   public times = [
+    10,
     10.5,
     11,
     11.5,
     12,
-    12.5
+    12.5,
+    13,
+    13.5,
+    14,
+    14.5,
+    15,
+    15.5,
+    16,
+    16.5,
+    17,
+    17.5,
+    18,
+    18.5,
+    19,
+    19.5,
+    20,
+    20.5
   ];
+  public days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ]
   
   
 
@@ -39,7 +57,7 @@ export class ScheduleComponent implements OnInit {
   constructor(private employeeService: EmployeeService){
   }
 
-  onNavSwitch(num: number): void {
+  public onNavSwitch(num: number): void {
     if(num === 1) {
       this.nav1Active="active";
       this.nav2Active="";
@@ -50,7 +68,7 @@ export class ScheduleComponent implements OnInit {
     }
   }
  
-  ngOnInit() {
+  public ngOnInit() {
     this.getEmployees();
   }
  
@@ -104,63 +122,99 @@ export class ScheduleComponent implements OnInit {
 
   }
 
-  onClickSchedule(employee: Employee, time: number): void {
+
+  public updateTable(employee: Employee) {
+    this.times?.forEach(time => {
+
+      const button = document.getElementById(employee.id+'-'+time);
+
+      if(employee.shiftStart == null || employee.shiftEnd == null) {
+        button?.setAttribute('style', '');
+        return;
+      }
+
+      if(employee.shiftStart <= time && time <= employee.shiftEnd) {
+        button?.setAttribute('style', 'background: ' + employee.color);
+      }
+      else {
+        button?.setAttribute('style', '');
+      }
+      
+    });
+  }
+
+  public onClickSchedule(employee: Employee, time: number): void {
 
     //Give employees colors
     this.assignEmployeeColors();
 
     // Find element by unique combination of time and employee UUID 
     const button = document.getElementById(employee.id+'-'+time);
-    
 
-    //User clicked button
-    if(button?.getAttribute('style') == null || button?.getAttribute('style') == '') {
-      button?.setAttribute('style', 'background: ' + employee.color);
 
-      //Add time to existing employee
-      const times = this.scheduleMap.find(sm => sm.id === employee.id)?.times.push(time);
 
-      //If employee doesn't exist create one
-      if(this.scheduleMap.find(sm => sm.id === employee.id) == null){
-        this.scheduleMap?.push({
-          id: employee.id,
-          times: [time],
-          shiftStart: undefined,
-          shiftEnd: undefined
-        })
-      }
-      
-
+    //Init
+    if(employee.shiftStart == null || employee.shiftEnd == null) {
+      employee.shiftStart = time;
+      employee.shiftEnd = time;
+      this.updateTable(employee);
+      return;
     }
-    else { //user unclicked button
-      button?.setAttribute('style', '');
+    else if(employee.shiftEnd == employee.shiftStart && employee.shiftStart == time) {
+      employee.shiftStart = null;
+      employee.shiftEnd = null;
+      this.updateTable(employee);
+      return;       
+    }
+    else if(employee.shiftStart == time) {
+      employee.shiftStart = employee.shiftStart + 1;
+    }
+    else if(employee.shiftEnd == time) {
+      employee.shiftEnd = employee.shiftEnd - 1;
+    }
 
-      //find employee in array in scheduleMaps and return if undefined
-      if(this.scheduleMap?.find(sm => sm.id === employee.id) == undefined) return;
-      const times = this.scheduleMap?.find(sm => sm.id === employee.id)!.times;
-      
-      //remove time from array
-      for(var i: number = 0; i < times.length; i++)
-        if(times[i] == time) times.splice(i);
+    else if(time < employee.shiftStart) { //flip flopped
+      employee.shiftEnd = employee.shiftStart;
+      employee.shiftStart = time;
+    }
+    else if(employee.shiftStart <= time && time <= employee.shiftEnd) { //If inside a clicked segment
+      if(employee.shiftStart - time < time - employee.shiftEnd) {
+        employee.shiftEnd = employee.shiftEnd + (time - employee.shiftEnd);
+      }
+      else {
+        employee.shiftStart = employee.shiftStart - (employee.shiftStart - time); 
+      }
+    }
 
-      
-    } 
+    else employee.shiftEnd = time;
 
-    console.log(this.scheduleMap);
-      
+    this.updateTable(employee);
   }
 
-  totalHours(employee: Employee): string {
+  public totalHours(employee: Employee): string {
     var total: number = 0;
-    this.scheduleMap
-      .find(sm => sm.id === employee.id)?.times
-      .forEach(() => total = total + 1 * this.timeInterval);
-    return total + " hours";
+    
+    if(employee.shiftEnd == 0 || employee.shiftStart == 0) {
+      return this.timeInterval + " hour";
+    }
+    if(employee.shiftStart == null || employee.shiftEnd == null) {
+      return 0 + " hours";
+    }
+
+    var adjustedShiftEnd: number = employee.shiftEnd  + 1;
+    var netHours: number = Math.abs(employee.shiftStart - adjustedShiftEnd);
+
+    if(netHours > 6)
+      return netHours - .5 + " hours";
+
+    return Math.abs(employee.shiftStart - adjustedShiftEnd) + " hours";
   }
 
-  parseTimeToString(time: number): string {
+  public parseTimeToString(time: number): string {
     var minutes: number = time % 1;
     var hours: number = time - minutes;
+
+    if(hours > 12) hours = hours - 12;
 
     switch(minutes) {
       default:
@@ -174,18 +228,11 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
-  concatTimes(scheduleMap: ScheduleMap) {
-    var id: string = scheduleMap.id;
-    var times: number[] = scheduleMap.times;
-
-    for(var i: number = 0; i < times.length; i++) {
-      for(var j: number = 0; j < times.length; j++) { 
-        if(times[i]-times[j] == this.timeInterval){
-          
-        }
-      }
-    }
-
+  public formatShift(employee: Employee): string {
+    if(employee.shiftStart == null || employee.shiftEnd == null) return "";
+    
+    if(employee.shiftEnd == this.times[this.times.length-1]) return this.parseTimeToString(employee.shiftStart) + "–cl";
+    return this.parseTimeToString(employee.shiftStart) + "–"+  this.parseTimeToString(employee.shiftEnd);
   }
   
 }
