@@ -167,12 +167,11 @@ export class ScheduleComponent implements OnInit {
       return;       
     }
     else if(employee.shiftStart == time) {
-      employee.shiftStart = employee.shiftStart + 1;
+      employee.shiftStart = employee.shiftStart + this.timeInterval;
     }
     else if(employee.shiftEnd == time) {
-      employee.shiftEnd = employee.shiftEnd - 1;
+      employee.shiftEnd = employee.shiftEnd - this.timeInterval;
     }
-
     else if(time < employee.shiftStart) { //flip flopped
       employee.shiftEnd = employee.shiftStart;
       employee.shiftStart = time;
