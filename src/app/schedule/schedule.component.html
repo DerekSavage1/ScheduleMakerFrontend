@@ -28,7 +28,7 @@
 
   <!-- Single Day  -->
   <div class="row" *ngFor="let day of days">
-    <div class="card" *ngIf="cardVisable(day)">
+    <div class="card" [hidden]="!cardVisable(day)">
       <div class="card-block p-5">
         <div class="btn-group-vertical col-auto align-bottom">
             <!-- Y axis label -->
@@ -56,10 +56,6 @@
     </div><!-- card -->
   </div>
 
-  <!-- Loading alert -->
-  <div *ngIf="hasUnfilledRows()" class="alert alert-warning" role="alert" aria-hidden="true">
-    <h3 class="text-center text-warning">Note! If switching tabs does not show color, click again!</h3>
-  </div>
 </div>
 
 

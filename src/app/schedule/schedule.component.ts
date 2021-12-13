@@ -84,17 +84,6 @@ export class ScheduleComponent implements OnInit {
 
   constructor(private employeeService: EmployeeService){
   }
-
-  public onNavSwitch(num: number): void {
-    if(num === 1) {
-      this.nav1Active="active";
-      this.nav2Active="";
-    }
-    if(num === 2) {
-      this.nav2Active="active";
-      this.nav1Active=""
-    }
-  }
  
   public ngOnInit() {
     this.getEmployees();
