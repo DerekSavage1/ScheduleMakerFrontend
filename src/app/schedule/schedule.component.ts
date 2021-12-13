@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { find, Observable } from 'rxjs';
 import { Employee } from '../employee';
 import { EmployeeService } from '../employee.service';
+import { ScheduledDay } from './scheduledDay';
 
 @Component({
   selector: 'app-schedule',
@@ -47,8 +49,34 @@ export class ScheduleComponent implements OnInit {
     "Friday",
     "Saturday"
   ]
+  public tab: string = "";
   
+  public setTab(day: string) :void {
+    this.tab = day;
+    this.refreshTable(day);
+  }  
+
+  refreshTable(day: string) {
+    this.employees?.forEach(employee => {
+      this.times?.forEach(time => {
+        var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
+        const button = document.getElementById(employee.id+'-'+time+'-'+day);
   
+        if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) {
+          button?.setAttribute('style', '');
+          return;
+        }
+  
+        if(scheduledDay?.shiftStart <= time && time <= scheduledDay?.shiftEnd) {
+          button?.setAttribute('style', 'background: ' + employee.color);
+        }
+        else {
+          button?.setAttribute('style', '');
+        }
+        
+      });
+    });
+  }
 
   //Palate of colors to choose from
   public colors = ["#96ffcb","#ffe186","#ffc2e1","#ffb296","#9cd2ff"];
@@ -97,43 +125,46 @@ export class ScheduleComponent implements OnInit {
     var timesToCheck = Object.assign([], this.times);
     var count: number = 0;
 
-    this.employees?.forEach(employee => {
-      this.times?.forEach(time => {
-
-        const button = document.getElementById(employee.id+'-'+time);
+    this.days?.forEach(day => {
+      this.employees?.forEach(employee => {
+        this.times?.forEach(time => {
   
-        // if button has style, remove it from list of times to check
-        if(button?.getAttribute('style') == 'background: ' + employee.color) {
-          for(var i = 0; i <= timesToCheck.length; i++) {
-            if(timesToCheck[i] === time) {
-              delete timesToCheck[i];
-              count++;
-              break;
+          const button = document.getElementById(employee.id+'-'+time+'-'+day);
+    
+          // if button has style, remove it from list of times to check
+          if(button?.getAttribute('style') == 'background: ' + employee.color) {
+            for(var i = 0; i <= timesToCheck.length; i++) {
+              if(timesToCheck[i] === time) {
+                delete timesToCheck[i];
+                count++;
+                break;
+              }
             }
+  
           }
-
-        }
-
+  
+        });
       });
-    });
+    })
 
-    if(timesToCheck.length == count) return false;
+    if(timesToCheck.length == count * this.days.length) return false;
     return true;
 
   }
 
 
-  public updateTable(employee: Employee) {
+  public updateTable(employee: Employee, day: string) {
     this.times?.forEach(time => {
 
-      const button = document.getElementById(employee.id+'-'+time);
+      var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
+      const button = document.getElementById(employee.id+'-'+time+'-'+day);
 
-      if(employee.shiftStart == null || employee.shiftEnd == null) {
+      if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) {
         button?.setAttribute('style', '');
         return;
       }
 
-      if(employee.shiftStart <= time && time <= employee.shiftEnd) {
+      if(scheduledDay?.shiftStart <= time && time <= scheduledDay?.shiftEnd) {
         button?.setAttribute('style', 'background: ' + employee.color);
       }
       else {
@@ -143,71 +174,121 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
-  public onClickSchedule(employee: Employee, time: number): void {
+  public onClickSchedule(employee: Employee, time: number, day: string): void {
 
     //Give employees colors
     this.assignEmployeeColors();
 
     // Find element by unique combination of time and employee UUID 
-    const button = document.getElementById(employee.id+'-'+time);
+    const button = document.getElementById(employee.id+'-'+time+'-'+day);
 
+    
 
-
-    //Init
-    if(employee.shiftStart == null || employee.shiftEnd == null) {
-      employee.shiftStart = time;
-      employee.shiftEnd = time;
-      this.updateTable(employee);
+    //Init if any values are null
+    if(employee.scheduledDays == undefined) {
+      employee.scheduledDays = [{
+        day: day,
+        shiftStart: time,
+        shiftEnd: time
+      }];
+      console.log(employee);
+      this.updateTable(employee, day);
       return;
     }
-    else if(employee.shiftEnd == employee.shiftStart && employee.shiftStart == time) {
-      employee.shiftStart = null;
-      employee.shiftEnd = null;
-      this.updateTable(employee);
-      return;       
-    }
-    else if(employee.shiftStart == time) {
-      employee.shiftStart = employee.shiftStart + this.timeInterval;
-    }
-    else if(employee.shiftEnd == time) {
-      employee.shiftEnd = employee.shiftEnd - this.timeInterval;
-    }
-    else if(time < employee.shiftStart) { //flip flopped
-      employee.shiftEnd = employee.shiftStart;
-      employee.shiftStart = time;
-    }
-    else if(employee.shiftStart <= time && time <= employee.shiftEnd) { //If inside a clicked segment
-      if(employee.shiftStart - time < time - employee.shiftEnd) {
-        employee.shiftEnd = employee.shiftEnd + (time - employee.shiftEnd);
-      }
-      else {
-        employee.shiftStart = employee.shiftStart - (employee.shiftStart - time); 
-      }
+
+    var scheduledDay: ScheduledDay | undefined = employee.scheduledDays.find(sch => sch.day == day);
+    
+    //Guard against uninitalized scheduleDay
+    if(scheduledDay == null) {
+      employee.scheduledDays.push({
+        day: day,
+        shiftStart: time,
+        shiftEnd: time
+      });
+      console.log(employee);
+      this.updateTable(employee, day);
+      return; 
     }
 
-    else employee.shiftEnd = time;
+    //Guard against uninitalized values
+    if( scheduledDay.shiftEnd == null || scheduledDay.shiftStart == null) {
+      var schDay = employee.scheduledDays.find(sch => sch.day == day);
+      schDay!.shiftStart = time;
+      schDay!.shiftEnd = time;
+      console.log(employee);
+      this.updateTable(employee, day);
+      return;
+    }
 
-    this.updateTable(employee);
+    var insideClickedSegment: boolean = (scheduledDay.shiftStart <= time && time <= scheduledDay.shiftEnd);
+
+    
+
+    if(insideClickedSegment) { //Inside logic
+
+      var distFromTop: number = scheduledDay.shiftStart - time;
+      var distFromBot: number = time - scheduledDay.shiftEnd;
+      if(scheduledDay.shiftStart == scheduledDay.shiftEnd) {
+        scheduledDay.shiftEnd = null;
+        scheduledDay.shiftStart = null;
+      }
+      else if(scheduledDay.shiftStart == time) scheduledDay.shiftStart = scheduledDay.shiftStart + this.timeInterval;
+      else if(scheduledDay.shiftEnd == time) scheduledDay.shiftEnd = scheduledDay.shiftEnd - this.timeInterval;
+      else if(distFromTop <= distFromBot) scheduledDay.shiftEnd = scheduledDay.shiftEnd + distFromBot;
+      else scheduledDay.shiftStart = scheduledDay.shiftStart - distFromTop;
+    }
+    else { //Outside logic
+      var above: boolean = time - scheduledDay.shiftStart < 0;
+
+      if(above) {
+        scheduledDay.shiftStart = time;
+      }
+      else scheduledDay.shiftEnd = time;
+
+    }
+    
+
+
+    console.log(employee);
+    this.updateTable(employee, day);
   }
 
-  public totalHours(employee: Employee): string {
+  public totalHours(employee: Employee, day: string): string {
     var total: number = 0;
-    
-    if(employee.shiftEnd == 0 || employee.shiftStart == 0) {
-      return this.timeInterval + " hour";
+
+    if(employee.scheduledDays == null) {
+      return "0 hours";
     }
-    if(employee.shiftStart == null || employee.shiftEnd == null) {
+    
+    var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
+
+  
+    if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null)
       return 0 + " hours";
+    else if(scheduledDay?.shiftEnd ==  scheduledDay?.shiftStart) {
+      if(this.timeInterval == 1) {
+        return this.timeInterval + " hour";
+      }
+      else return this.timeInterval + " hours";
     }
 
-    var adjustedShiftEnd: number = employee.shiftEnd  + 1;
-    var netHours: number = Math.abs(employee.shiftStart - adjustedShiftEnd);
+
+    var adjustedShiftEnd: number = scheduledDay?.shiftEnd  + this.timeInterval;
+    var netHours: number = Math.abs(scheduledDay?.shiftStart - adjustedShiftEnd);
+    var terminatingString: string = " hours";
+    if(netHours == 1) {
+      terminatingString = " hour"
+    }
 
     if(netHours > 6)
-      return netHours - .5 + " hours";
+      return netHours - .5 + terminatingString;
 
-    return Math.abs(employee.shiftStart - adjustedShiftEnd) + " hours";
+
+    return Math.abs(netHours) + terminatingString;
+
   }
+
+
 
   public parseTimeToString(time: number): string {
     var minutes: number = time % 1;
@@ -227,11 +308,17 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
-  public formatShift(employee: Employee): string {
-    if(employee.shiftStart == null || employee.shiftEnd == null) return "";
+  public formatShift(employee: Employee, day: string): string {
     
-    if(employee.shiftEnd == this.times[this.times.length-1]) return this.parseTimeToString(employee.shiftStart) + "–cl";
-    return this.parseTimeToString(employee.shiftStart) + "–"+  this.parseTimeToString(employee.shiftEnd);
+    var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
+
+    if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) return "";
+    
+    if(scheduledDay?.shiftEnd == this.times[this.times.length-1]) return this.parseTimeToString(scheduledDay?.shiftStart) + "–cl";
+    return this.parseTimeToString(scheduledDay?.shiftStart) + "–"+  this.parseTimeToString(scheduledDay?.shiftEnd);
   }
-  
+
+  cardVisable(day: string): boolean {
+    return day == this.tab;
+  } 
 }

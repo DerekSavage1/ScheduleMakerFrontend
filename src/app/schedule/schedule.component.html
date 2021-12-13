@@ -2,78 +2,64 @@
 
     <div class="card p-2" >
         <h1 class="display text-center" >Schedule</h1>
+        <p class="display text-center">Click a day to get started!</p>
     </div>
     
-
-
-    <div class="row">
-
-      <ul class="nav nav-tabs" >
-          <li class="nav-item">
-            <a href="#/schedule" class="nav-link {{nav1Active}}" (click)="onNavSwitch(1)">Builder</a>
-          </li>
-          <li class="nav-item">
-            <a href="#/schedule" class="nav-link disabled" (click)="onNavSwitch(2)">Settings</a>
-          </li>
-      </ul>
-
-      <!-- Single Day  -->
-      <div class="card col-12 p-4" *ngIf="nav1Active">
-        <div class="card-block p-5">
-          <div class="btn-group-vertical col-auto align-bottom">
-
-              <!-- Y axis label -->
-              <button *ngFor="let time of times" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{this.parseTimeToString(time)}} </button>
-              <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> Total: </button>
-          </div>
-
-          <div class="btn-group-vertical col-10">
-            <!-- Name Labels -->
-            <div class="btn-group" role="group">
-                <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{employee.name}} </button>
-            </div>
-
-            <!-- Button Grid  -->
-            <div *ngFor="let time of times" class="btn-group" role="group">
-                <button *ngFor="let employee of employees" type="button" class="btn border-dark" (click)="onClickSchedule(employee,time)" id="{{employee.id}}-{{time}}"></button>
-            </div>
-
-            <!-- Hourly totals -->
-            <div class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{totalHours(employee)}} </button>
-            </div>                    
-          </div>
-        </div>
-
-
-      </div><!-- card -->
-    </div>
-
-    <div class="row">
-      <div class="card">
-        <div class="card-block p-5">
-          <table class="table table-hover m-2">
-            <thead>
-              <tr>
-                <th scope="col"></th>
-                <th scope="col" *ngFor="let day of days">{{day}}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let employee of employees">
-                <th scope="row">{{employee.name}}</th>
-                <td>{{formatShift(employee)}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  <div class="row">
+    <div class="card">
+      <div class="card-block p-5">
+        <table class="table table-hover table-striped m-2">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" *ngFor="let day of days" (click)="setTab(day)"><a href="#/schedule">{{day}}</a></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let employee of employees">
+              <th scope="row">{{employee.name}}</th>
+              <td *ngFor="let day of days">{{formatShift(employee, day)}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-            <!-- Loading alert -->
-            <div *ngIf="hasUnfilledRows()" class="alert alert-warning" role="alert" aria-hidden="true">
-              <h3 class="text-center text-warning">All rows must have at least 1 worker!</h3>
+  <!-- Single Day  -->
+  <div class="row" *ngFor="let day of days">
+    <div class="card" *ngIf="cardVisable(day)">
+      <div class="card-block p-5">
+        <div class="btn-group-vertical col-auto align-bottom">
+            <!-- Y axis label -->
+            <button *ngFor="let time of times" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{this.parseTimeToString(time)}} </button>
+            <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> Total: </button>
+        </div>
+
+        <div class="btn-group-vertical col-10">
+          <!-- Name Labels -->
+          <div class="btn-group" role="group">
+              <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{employee.name}} </button>
           </div>
+
+          <!-- Button Grid  -->
+          <div *ngFor="let time of times" class="btn-group" role="group">
+              <button *ngFor="let employee of employees" type="button" class="btn border-dark" (click)="onClickSchedule(employee,time,day)" id="{{employee.id}}-{{time}}-{{day}}"></button>
+          </div>
+
+          <!-- Hourly totals -->
+          <div class="btn-group" role="group">
+            <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{totalHours(employee,day)}} </button>
+          </div>                    
+        </div>
+      </div>
+    </div><!-- card -->
+  </div>
+
+  <!-- Loading alert -->
+  <div *ngIf="hasUnfilledRows()" class="alert alert-warning" role="alert" aria-hidden="true">
+    <h3 class="text-center text-warning">Note! If switching tabs does not show color, click again!</h3>
+  </div>
 </div>
 
 

@@ -1,3 +1,6 @@
+import { ScheduledDay } from "./schedule/scheduledDay";
+
+
 export interface Employee {
     id: string;
     name: string;
@@ -6,6 +9,5 @@ export interface Employee {
     phone: string;
     imageUrl: string;
     color: string;
-    shiftStart: number | null;
-    shiftEnd: number | null;
+    scheduledDays: ScheduledDay[] | undefined;
 }

@@ -2,3 +2,8 @@ button {
     min-height: 40px;
     box-shadow: none;
 }
+a:link, a:visited {
+    color: black;
+    background-color: transparent;
+    text-decoration: none;
+  }
