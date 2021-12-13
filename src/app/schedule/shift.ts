@@ -1,7 +1,8 @@
 import { Time } from "@angular/common";
 
-export interface ScheduledDay {
+export interface Shift {
     day: string,
     shiftStart: number | null,
-    shiftEnd: number | null
+    shiftEnd: number | null,
+    disabled: boolean
 }

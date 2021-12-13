@@ -51,7 +51,9 @@
 
           <!-- Button Grid  -->
           <div *ngFor="let time of times" class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn border-dark" (click)="onClickSchedule(employee,time,day)" id="{{employee.id}}-{{time}}-{{day}}"></button>
+              <button *ngFor="let employee of employees" type="button" class="btn border-dark" [disabled]='isTimeDisabled()'  (click)="onClickSchedule(employee,time,day)" id="{{employee.id}}-{{time}}-{{day}}">
+                <fa-icon *ngIf='isTimeDisabled()' [icon]="['fas','times']" ></fa-icon>
+              </button>
           </div>
 
           <!-- Hourly totals -->

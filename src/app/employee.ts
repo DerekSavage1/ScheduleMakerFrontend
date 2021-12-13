@@ -1,4 +1,4 @@
-import { ScheduledDay } from "./schedule/scheduledDay";
+import { Shift } from "./schedule/shift";
 
 
 export interface Employee {
@@ -9,5 +9,5 @@ export interface Employee {
     phone: string;
     imageUrl: string;
     color: string;
-    scheduledDays: ScheduledDay[] | undefined;
+    scheduledDays: Shift[] | undefined;
 }

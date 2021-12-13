@@ -1,9 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { find, Observable } from 'rxjs';
 import { Employee } from '../employee';
 import { EmployeeService } from '../employee.service';
-import { ScheduledDay } from './scheduledDay';
+import { Shift } from './shift';
 
 @Component({
   selector: 'app-schedule',
@@ -59,6 +58,11 @@ export class ScheduleComponent implements OnInit {
   public isNavActive(day: string) :string {
     if(day == this.tab) return "active";
     return "";
+  }
+
+  public isTimeDisabled(): boolean {
+    //not implemented
+    return false;
   }
 
   refreshTable(day: string) {
@@ -183,21 +187,23 @@ export class ScheduleComponent implements OnInit {
       employee.scheduledDays = [{
         day: day,
         shiftStart: time,
-        shiftEnd: time
+        shiftEnd: time,
+        disabled: false
       }];
       console.log(employee);
       this.updateTable(employee, day);
       return;
     }
 
-    var scheduledDay: ScheduledDay | undefined = employee.scheduledDays.find(sch => sch.day == day);
+    var scheduledDay: Shift | undefined = employee.scheduledDays.find(sch => sch.day == day);
     
     //Guard against uninitalized scheduleDay
     if(scheduledDay == null) {
       employee.scheduledDays.push({
         day: day,
         shiftStart: time,
-        shiftEnd: time
+        shiftEnd: time,
+        disabled: false
       });
       console.log(employee);
       this.updateTable(employee, day);
