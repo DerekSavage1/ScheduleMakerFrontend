@@ -54,7 +54,12 @@ export class ScheduleComponent implements OnInit {
   public setTab(day: string) :void {
     this.tab = day;
     this.refreshTable(day);
-  }  
+  }
+
+  public isNavActive(day: string) :string {
+    if(day == this.tab) return "active";
+    return "";
+  }
 
   refreshTable(day: string) {
     this.employees?.forEach(employee => {
