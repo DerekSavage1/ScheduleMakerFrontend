@@ -26,6 +26,13 @@
     </div>
   </div>
 
+  <ul class="nav nav-tabs">
+    <li class="nav-item" *ngFor="let day of days">
+      <a class="nav-link" [class]="isNavActive(day)" href="#/schedule" (click)="setTab(day)" >{{day}}</a>
+    </li>
+  </ul>
+
+
   <!-- Single Day  -->
   <div class="row" *ngFor="let day of days">
     <div class="card" [hidden]="!cardVisable(day)">

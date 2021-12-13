@@ -8,7 +8,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EmployeeComponent } from './employee/employee.component';
-import { appRoutingModule } from './app.routing';
+import { AppRoutingModule } from './app.routing';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { StockComponent } from './stock/stock.component';
 import { ScheduleComponent } from './schedule/schedule.component';
@@ -26,7 +26,7 @@ import { ScheduleComponent } from './schedule/schedule.component';
     HttpClientModule,
     FontAwesomeModule,
     FormsModule,
-    appRoutingModule
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [
