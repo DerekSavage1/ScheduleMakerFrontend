@@ -1,5 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { elementEventFullName } from '@angular/compiler/src/view_compiler/view_compiler';
 import { Component, OnInit } from '@angular/core';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { FontawesomeObject } from '@fortawesome/fontawesome-svg-core';
 import { Employee } from '../employee';
 import { EmployeeService } from '../employee.service';
 import { Shift } from './shift';
@@ -11,45 +14,19 @@ import { Shift } from './shift';
 })
 export class ScheduleComponent implements OnInit {
 
-  public nav1Active: String = "active";
-  public nav2Active: String = "";
   public employees: Employee[] | undefined;
-  public timeInterval: number = .5;
-  public times = [
-    10,
-    10.5,
-    11,
-    11.5,
-    12,
-    12.5,
-    13,
-    13.5,
-    14,
-    14.5,
-    15,
-    15.5,
-    16,
-    16.5,
-    17,
-    17.5,
-    18,
-    18.5,
-    19,
-    19.5,
-    20,
-    20.5
-  ];
-  public days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday"
-  ]
-  public tab: string = "";
   
+  public timeInterval: number = 1;
+  public storeOpen = 10;
+  public storeClose = 12+8;
+  
+  public times: number[] = [];
+  public days = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  public tab: string = "";
+  public colors = ["#96ffcb","#ffe186","#ffc2e1","#ffb296","#9cd2ff"];
+  
+  constructor(private employeeService: EmployeeService){ }
+
   public setTab(day: string) :void {
     this.tab = day;
     this.refreshTable(day);
@@ -60,9 +37,9 @@ export class ScheduleComponent implements OnInit {
     return "";
   }
 
-  public isTimeDisabled(): boolean {
-    //not implemented
-    return false;
+  public isTimeDisabled(employee: Employee, day: string, time: number): boolean {
+    const button = document.getElementById(employee.id+'-'+time+'-'+day);
+    return button!.classList.contains("disabled");
   }
 
   refreshTable(day: string) {
@@ -86,15 +63,16 @@ export class ScheduleComponent implements OnInit {
       });
     });
   }
-
-  //Palate of colors to choose from
-  public colors = ["#96ffcb","#ffe186","#ffc2e1","#ffb296","#9cd2ff"];
-
-
-  constructor(private employeeService: EmployeeService){
-  }
  
   public ngOnInit() {
+    
+    for(var i: number = this.storeOpen; i <= this.storeClose; i += this.timeInterval) {
+      
+      this.times.push(i);
+      if(i == this.storeClose) this.times.push(this.storeClose + .5);
+    }
+
+
     this.getEmployees();
   }
  
@@ -102,6 +80,7 @@ export class ScheduleComponent implements OnInit {
     this.employeeService.getEmployees().subscribe(
     (responce : Employee[]) => {
       this.employees = responce;
+      this.assignEmployeeColors();
     },
     (error: HttpErrorResponse) => {
       alert(error.message);
@@ -150,107 +129,111 @@ export class ScheduleComponent implements OnInit {
 
   }
 
-
-  public updateTable(employee: Employee, day: string) {
+  public colorTable(employee: Employee, day: string) {
     this.times?.forEach(time => {
 
       var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
-      const button = document.getElementById(employee.id+'-'+time+'-'+day);
+      const button = document.getElementById(employee.id+'-'+time+'-'+day);  
+      
+      if(button == null) return;
 
-      if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) {
-        button?.setAttribute('style', '');
-        return;
-      }
+      if(employee.scheduledDays?.find(sch => sch.day === day)?.disabled == true) {
+        button.classList.add('disabled');
 
-      if(scheduledDay?.shiftStart <= time && time <= scheduledDay?.shiftEnd) {
-        button?.setAttribute('style', 'background: ' + employee.color);
       }
       else {
-        button?.setAttribute('style', '');
+        if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) {
+          button.setAttribute('style', 'width: 40px;');
+          return;
+        }
+  
+        if(scheduledDay?.shiftStart <= time && time <= scheduledDay?.shiftEnd) {
+          button.setAttribute('style', 'width: 40px; background: ' + employee.color);
+        }
+        else {
+          button.setAttribute('style', '');
+        }
       }
+      
       
     });
   }
 
   public onClickSchedule(employee: Employee, time: number, day: string): void {
 
-    //Give employees colors
-    this.assignEmployeeColors();
-
-    // Find element by unique combination of time and employee UUID 
     const button = document.getElementById(employee.id+'-'+time+'-'+day);
 
+    this.changeEmployeeSchedule(employee, time, day)
     
+    this.colorTable(employee, day);
+  }
 
+  public changeEmployeeSchedule(employee: Employee, time: number, day: string) {
+    
     //Init if any values are null
     if(employee.scheduledDays == undefined) {
       employee.scheduledDays = [{
         day: day,
         shiftStart: time,
         shiftEnd: time,
-        disabled: false
+        disabled: true,
+        date: undefined
       }];
-      console.log(employee);
-      this.updateTable(employee, day);
+      this.colorTable(employee, day);
       return;
     }
 
-    var scheduledDay: Shift | undefined = employee.scheduledDays.find(sch => sch.day == day);
+    var shift: Shift = employee.scheduledDays.find(sch => sch.day == day)!;
     
     //Guard against uninitalized scheduleDay
-    if(scheduledDay == null) {
+    if(shift == null) {
       employee.scheduledDays.push({
         day: day,
         shiftStart: time,
         shiftEnd: time,
-        disabled: false
+        disabled: true,
+        date: undefined
       });
-      console.log(employee);
-      this.updateTable(employee, day);
+      this.colorTable(employee, day);
       return; 
     }
 
     //Guard against uninitalized values
-    if( scheduledDay.shiftEnd == null || scheduledDay.shiftStart == null) {
+    if( shift.shiftEnd == null || shift.shiftStart == null) {
       var schDay = employee.scheduledDays.find(sch => sch.day == day);
       schDay!.shiftStart = time;
       schDay!.shiftEnd = time;
-      console.log(employee);
-      this.updateTable(employee, day);
+      this.colorTable(employee, day);
       return;
     }
 
-    var insideClickedSegment: boolean = (scheduledDay.shiftStart <= time && time <= scheduledDay.shiftEnd);
-
-    
+    var insideClickedSegment: boolean = (shift.shiftStart <= time && time <= shift.shiftEnd);
 
     if(insideClickedSegment) { //Inside logic
+      var distFromTop: number = Math.abs(shift.shiftStart - time);
+      var distFromBot: number = Math.abs(time - shift.shiftEnd);
+      var shiftOneUnitTall: boolean = shift.shiftStart == shift.shiftEnd;
+      var clickedOnTopHalf: boolean = distFromTop < distFromBot;
 
-      var distFromTop: number = scheduledDay.shiftStart - time;
-      var distFromBot: number = time - scheduledDay.shiftEnd;
-      if(scheduledDay.shiftStart == scheduledDay.shiftEnd) {
-        scheduledDay.shiftEnd = null;
-        scheduledDay.shiftStart = null;
+      if(shiftOneUnitTall) {
+        shift.shiftEnd = null;
+        shift.shiftStart = null;
       }
-      else if(scheduledDay.shiftStart == time) scheduledDay.shiftStart = scheduledDay.shiftStart + this.timeInterval;
-      else if(scheduledDay.shiftEnd == time) scheduledDay.shiftEnd = scheduledDay.shiftEnd - this.timeInterval;
-      else if(distFromTop <= distFromBot) scheduledDay.shiftEnd = scheduledDay.shiftEnd + distFromBot;
-      else scheduledDay.shiftStart = scheduledDay.shiftStart - distFromTop;
+      else if(clickedOnTopHalf) {
+        if(distFromTop == 0) shift.shiftStart += this.timeInterval; //Clicked on the very top
+        else shift.shiftStart += distFromTop;
+      }
+      else if(!clickedOnTopHalf) {
+        if(distFromBot == 0) shift.shiftEnd -= this.timeInterval; //Clicked on the very bottom
+        else shift.shiftEnd -= distFromBot;
+      }
     }
     else { //Outside logic
-      var above: boolean = time - scheduledDay.shiftStart < 0;
+      var above: boolean = time - shift.shiftStart < 0;
 
-      if(above) {
-        scheduledDay.shiftStart = time;
-      }
-      else scheduledDay.shiftEnd = time;
-
+      if(above) shift.shiftStart = time;
+      else shift.shiftEnd = time;
     }
-    
-
-
-    console.log(employee);
-    this.updateTable(employee, day);
   }
 
   public totalHours(employee: Employee, day: string): string {
@@ -273,7 +256,7 @@ export class ScheduleComponent implements OnInit {
     }
 
 
-    var adjustedShiftEnd: number = scheduledDay?.shiftEnd  + this.timeInterval;
+    var adjustedShiftEnd: number = scheduledDay?.shiftEnd;
     var netHours: number = Math.abs(scheduledDay?.shiftStart - adjustedShiftEnd);
     var terminatingString: string = " hours";
     if(netHours == 1) {
@@ -287,8 +270,6 @@ export class ScheduleComponent implements OnInit {
     return Math.abs(netHours) + terminatingString;
 
   }
-
-
 
   public parseTimeToString(time: number): string {
     var minutes: number = time % 1;
