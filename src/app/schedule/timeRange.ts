@@ -3,5 +3,5 @@ export interface TimeRange {
     employeeId: string;
     dateStart: Date
     dateEnd: Date
-    flag: string
+    purpose: string
 }

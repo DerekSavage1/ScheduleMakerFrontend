@@ -26,7 +26,7 @@ import { ScheduleComponent } from './schedule/schedule.component';
     HttpClientModule,
     FontAwesomeModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [],
   bootstrap: [
