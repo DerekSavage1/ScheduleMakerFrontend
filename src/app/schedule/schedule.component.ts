@@ -5,7 +5,8 @@ import { Employee } from '../employee';
 import { EmployeeService } from '../employee.service';
 import { TimeRange } from './timeRange';
 import { TimeRangeService } from './timeRange.service';
-import {set, isBefore, add, isEqual, addDays, isSunday, format } from 'date-fns';
+import {set, isBefore, add, isEqual, addDays, isSunday, format, parse, isAfter } from 'date-fns';
+import { publishReplay } from 'rxjs';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class ScheduleComponent implements OnInit {
     minutes: 0
   };
 
-  public hours: Date[] = [];
+  public hours: String[] = [];
 
   public timeIntervalInMinutes: number = 30;
 
@@ -93,20 +94,20 @@ export class ScheduleComponent implements OnInit {
 
   }
 
-  getHours(day: Date): Date[] {
+  getHours(day: Date): string[] {
     var storeOpen: Date = set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: this.storeOpen.hours, minutes: this.storeOpen.minutes, seconds: 0, milliseconds: 0});
     var storeClose: Date = set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: this.storeClose.hours, minutes: this.storeClose.minutes, seconds: 0, milliseconds: 0});
 
-    var hourTimeStamps: Date[] = [];
+    var hours: string[] = [];
 
     var count: number = 0
     for(var i: Date = storeOpen; isBefore(i, storeClose) || isEqual(i, storeClose) ; i = add(i, {minutes: this.timeIntervalInMinutes})) {
-      hourTimeStamps.push(i);
+      hours.push(this.getHour(i));
       count++;
       if(count > 100) break;
     }
 
-    return hourTimeStamps;
+    return hours;
   }
 
   getDaysNextWeek(): Date[] {
@@ -151,37 +152,82 @@ export class ScheduleComponent implements OnInit {
 
 
 
-  public colorInTable(employee: Employee, date: Date) {
-    // this.times?.forEach(time => {
-
-      
-    //   var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
-    //   const button = document.getElementById(employee.id+'-'+time+'-'+day);
-
-    //   if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) {
-    //     button?.setAttribute('style', '');
-    //     return;
-    //   }
-
-    //   if(scheduledDay?.shiftStart <= time && time <= scheduledDay?.shiftEnd) {
-    //     button?.setAttribute('style', 'background: ' + employee.color);
-    //   }
-    //   else {
-    //     button?.setAttribute('style', '');
-    //   }
-      
-    // });
+  public colorButton(button: HTMLElement, color: string) {
+    button?.setAttribute('style', 'background: ' + color);
   }
 
-  public onClickSchedule(employee: Employee, date: Date): void {
+  public colorTable(employee: Employee, timeStamp: Date, timeRange: TimeRange) {
+    //Check every button for an employee to see if the button is between timeRange start and timeRange end
+    this.getHours(timeStamp).forEach(time => {
+      const button = document.getElementById(employee.id+'-'+this.getDate(timeStamp)+'-'+time);
 
-    // //Give employees colors
-    // this.assignEmployeeColors();
+      
 
-    // // Find element by unique combination of time and employee UUID 
-    // const button = document.getElementById(employee.id+'-'+time+'-'+day);
+      var buttonTime: Date = new Date(); //TODO
+      if(button == null) return;
+      if(this.isBetween(buttonTime, timeRange.dateStart!, timeRange.dateEnd!)) {
+        this.colorButton(button, employee.color);
+      }
+    });
 
+  }
+
+  findEmployeeShiftIndex(employee: Employee, day: Date): number {
+    var purpose: string = "shift";
+
+    var index: number | undefined = this.timeRanges.findIndex(tr => (tr.employeeId == employee.id && tr.purpose == purpose));
+
+    if(index == -1) {
+      this.timeRanges.push({
+        id: undefined,
+        employeeId: employee.id,
+        dateStart: null,
+        dateEnd: null,
+        purpose: purpose
+      });
+    }
+    return this.timeRanges.findIndex(tr => (tr.employeeId == employee.id && tr.purpose == purpose));
+  }
+
+  addTimeStampToShift(index: number, timeStamp: Date): void {
+
+    let todaysShift = this.timeRanges[index];
     
+    if(todaysShift.dateStart == null || todaysShift.dateEnd == null) {
+      todaysShift.dateEnd = timeStamp;
+      todaysShift.dateStart = timeStamp;
+    }
+    else if(isBefore(timeStamp, todaysShift.dateStart)) {
+      todaysShift.dateStart = timeStamp;
+    }
+    else if(isAfter(timeStamp, todaysShift.dateEnd)) {
+      todaysShift.dateEnd = timeStamp;
+    }
+
+  }
+
+  combineDayAndTime(day: Date, timeString:string): Date {
+    var time: Date = parse(timeString, 'h:mm', new Date());
+    
+    return set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: time.getHours(), minutes: time.getMinutes(), seconds: 0, milliseconds: 0});
+  }
+
+  public onClickSchedule(employee: Employee, day: Date, time:string): void {
+
+    this.assignEmployeeColors();
+
+    const button = document.getElementById(employee.id+'-'+this.getDate(day)+'-'+time);
+    if(button == null) return;
+
+    var timeStamp: Date = this.combineDayAndTime(day, time);
+
+    this.colorButton(button, employee.color);
+    
+    var index: number = this.findEmployeeShiftIndex(employee, timeStamp);
+    this.addTimeStampToShift(index, timeStamp);
+
+    console.log(this.timeRanges);
+      
 
     // //Init if any values are null
     // if(employee.scheduledDays == undefined) {
@@ -326,8 +372,8 @@ export class ScheduleComponent implements OnInit {
     this.timeRangeService.getTimeRange().subscribe(
     (responce : TimeRange[]) => {
       responce.forEach(tr => {
-        tr.dateStart = new Date( tr.dateStart.getTime() );
-        tr.dateEnd = new Date( tr.dateEnd.getTime() );
+        tr.dateStart = new Date( tr.dateStart!.getTime() );
+        tr.dateEnd = new Date( tr.dateEnd!.getTime() );
       })
       this.timeRanges = responce;
     },
@@ -342,7 +388,15 @@ export class ScheduleComponent implements OnInit {
   }
 
   public getHour(day: Date ):string {
-    return format(day, "hh:mm");
+    return format(day, "h:mm");
+  }
+
+  public isBetween(dateTest: Date, dateStart: Date, dateEnd: Date): boolean {
+    return isAfter(dateTest,dateStart) && isBefore(dateTest, dateEnd);
+  }
+
+  public getDate(day: Date): string {
+    return format(day, "mm/dd/yyy");
   }
 
 }

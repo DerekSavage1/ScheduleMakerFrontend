@@ -1,7 +1,7 @@
 export interface TimeRange {
-    id: number,
-    employeeId: string;
-    dateStart: Date
-    dateEnd: Date
+    id: number | undefined,
+    employeeId: string,
+    dateStart: Date | null,
+    dateEnd: Date | null,
     purpose: string
 }

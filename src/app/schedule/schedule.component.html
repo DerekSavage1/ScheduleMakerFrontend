@@ -39,7 +39,7 @@
       <div class="card-block p-5">
         <div class="btn-group-vertical col-auto align-bottom">
             <!-- Y axis label -->
-            <button *ngFor="let time of hours" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{getHour(time)}} </button>
+            <button *ngFor="let time of hours" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{time}} </button>
             <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> Total: </button>
         </div>
 
@@ -50,9 +50,9 @@
           </div>
 
           <!-- Button Grid  -->
-          <div *ngFor="let time of hours" class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn border-dark" [disabled]='isTimeDisabled()'  (click)="onClickSchedule(employee,time)" id="{{employee.id}}-{{time}}-{{day}}">
-                <fa-icon *ngIf='isTimeDisabled()' [icon]="['fas','times']" ></fa-icon>
+          <div *ngFor="let time of getHours(day)" class="btn-group" role="group">
+              <button *ngFor="let employee of employees" type="button" class="btn border-dark w-25" [disabled]='isTimeDisabled()'  (click)="onClickSchedule(employee,day,time)" id="{{employee.id}}-{{getDate(day)}}-{{time}}">
+              {{time}}
               </button>
           </div>
 
