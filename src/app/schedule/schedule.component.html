@@ -1,74 +1,72 @@
 <div class="container">
-
-    <div class="card p-2" >
-        <h1 class="display text-center" >Schedule</h1>
-        <p class="display text-center">Click a day to get started!</p>
-    </div>
-    
+  <div class="card p-2" >
+    <h1 class="display text-center" >Schedule
+    </h1>
+    <p class="display text-center">Click a day to get started!
+    </p>
+  </div>
   <div class="row">
     <div class="card">
       <div class="card-block p-5">
         <table class="table table-hover table-striped m-2">
           <thead>
             <tr>
-              <th scope="col"></th>
-              <th scope="col" *ngFor="let day of daysNextWeek" (click)="setTab(day)"><a href="#/schedule">{{getDOTW(day)}}</a></th>
+              <th scope="col">
+              </th>
+              <th scope="col" *ngFor="let day of daysNextWeek" (click)="setTab(day)">
+                <a href="#/schedule">{{getDOTW(day)}}
+                </a>
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let employee of employees">
-              <th scope="row">{{employee.name}}</th>
-              <td *ngFor="let day of daysNextWeek">{{formatShift(employee, day)}}</td>
+              <th scope="row">{{employee.name}}
+              </th>
+              <td *ngFor="let day of daysNextWeek">{{formatShift(employee, day)}}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
-
   <ul class="nav nav-tabs">
     <li class="nav-item" *ngFor="let day of daysNextWeek">
-      <a class="nav-link" [class]="isNavActive(day)" href="#/schedule" (click)="setTab(day)" >{{getDOTW(day)}}</a>
+      <a class="nav-link" id="nav-{{day}}" href="#/schedule" (click)="setTab(day)" >{{getDOTW(day)}}
+      </a>
     </li>
   </ul>
-
-
   <!-- Single Day  -->
   <div class="row" *ngFor="let day of daysNextWeek">
     <div class="card" [hidden]="!cardVisable(day)">
       <div class="card-block p-5">
         <div class="btn-group-vertical col-auto align-bottom">
-            <!-- Y axis label -->
-            <button *ngFor="let time of hours" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{time}} </button>
-            <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> Total: </button>
+          <!-- Y axis label -->
+          <button *ngFor="let time of getHours(day, false)" type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> {{time}} 
+          </button>
+          <button type="button" class="btn btn-outline-secondary" style="min-height: 40px; pointer-events: none;"> Total: 
+          </button>
         </div>
-
         <div class="btn-group-vertical col-10">
           <!-- Name Labels -->
           <div class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{employee.name}} </button>
+            <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{employee.name}} 
+            </button>
           </div>
-
           <!-- Button Grid  -->
-          <div *ngFor="let time of getHours(day)" class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn border-dark w-25" [disabled]='isTimeDisabled()'  (click)="onClickSchedule(employee,day,time)" id="{{employee.id}}-{{getDate(day)}}-{{time}}">
-              {{time}}
-              </button>
+          <div *ngFor="let time of getHours(day, true)" class="btn-group" role="group">
+            <button *ngFor="let employee of employees" type="button" class="btn border-dark w-25"  (click)="onClickSchedule(employee,day,time)" id="{{employee.id}}+{{getDate(day)}}-{{time}}">
+            </button>
           </div>
-
           <!-- Hourly totals -->
           <div class="btn-group" role="group">
-            <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> Total Hours </button>
+            <button *ngFor="let employee of employees" type="button" class="btn btn-outline-dark" style="width: 40px; pointer-events: none; font-weight: bold;"> {{totalHours(day, employee)}} 
+            </button>
           </div>                    
         </div>
       </div>
-    </div><!-- card -->
+    </div>
+    <!-- card -->
   </div>
-
 </div>
-
-
-
-
-
-

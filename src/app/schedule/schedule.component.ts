@@ -1,21 +1,30 @@
-import { Time } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { Employee } from '../employee';
-import { EmployeeService } from '../employee.service';
-import { TimeRange } from './timeRange';
-import { TimeRangeService } from './timeRange.service';
-import {set, isBefore, add, isEqual, addDays, isSunday, format, parse, isAfter } from 'date-fns';
-import { publishReplay } from 'rxjs';
-
+import { Time } from "@angular/common";
+import { HttpErrorResponse } from "@angular/common/http";
+import { Component, OnInit } from "@angular/core";
+import { Employee } from "../employee";
+import { EmployeeService } from "../employee.service";
+import { TimeRange } from "./timeRange";
+import { TimeRangeService } from "./timeRange.service";
+import {
+  set,
+  isBefore,
+  add,
+  isEqual,
+  addDays,
+  isSunday,
+  format,
+  parse,
+  isAfter,
+  differenceInMinutes,
+  sub,
+} from "date-fns";
 
 @Component({
-  selector: 'app-schedule',
-  templateUrl: './schedule.component.html',
-  styleUrls: ['./schedule.component.css']
+  selector: "app-schedule",
+  templateUrl: "./schedule.component.html",
+  styleUrls: ["./schedule.component.css"],
 })
 export class ScheduleComponent implements OnInit {
-
   public nav1Active: String = "active";
   public nav2Active: String = "";
   public employees: Employee[] | undefined;
@@ -23,380 +32,464 @@ export class ScheduleComponent implements OnInit {
 
   public storeOpen: Time = {
     hours: 10,
-    minutes: 0
+    minutes: 0,
   };
-  
-  
   public storeClose: Time = {
     hours: 20,
-    minutes: 0
+    minutes: 0,
   };
-
   public hours: String[] = [];
-
   public timeIntervalInMinutes: number = 30;
-
-  public times = [
-    10,
-    10.5,
-    11,
-    11.5,
-    12,
-    12.5,
-    13,
-    13.5,
-    14,
-    14.5,
-    15,
-    15.5,
-    16,
-    16.5,
-    17,
-    17.5,
-    18,
-    18.5,
-    19,
-    19.5,
-    20,
-    20.5
-  ];
   public tab: Date | undefined;
-  daysNextWeek: Date[] = [];
+  public daysNextWeek: Date[] = [];
 
-  
+  public colors = ["#96ffcb", "#ffe186", "#ffc2e1", "#ffb296", "#9cd2ff"];
 
-  
-  public setTab(day: Date) :void {
-    this.tab = day;
-  }
-
-  public isNavActive(day: Date) :string {
-    if(day == this.tab) return "active";
-    return "";
-  }
-
-  public isTimeDisabled(): boolean {
-    //not implemented
-    return false;
-  }
-
-  //Palate of colors to choose from
-  public colors = ["#96ffcb","#ffe186","#ffc2e1","#ffb296","#9cd2ff"];
-
-
-  constructor(private employeeService: EmployeeService, private timeRangeService: TimeRangeService){
-  }
+  constructor(
+    private employeeService: EmployeeService,
+    private timeRangeService: TimeRangeService
+  ) {}
 
   public ngOnInit() {
+    this.getTimeRanges();
     this.daysNextWeek = this.getDaysNextWeek();
-    this.hours = this.getHours(this.daysNextWeek[0]);
+    this.hours = this.getHours(this.daysNextWeek[0],true);
     this.getEmployees();
-
   }
 
-  getHours(day: Date): string[] {
-    var storeOpen: Date = set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: this.storeOpen.hours, minutes: this.storeOpen.minutes, seconds: 0, milliseconds: 0});
-    var storeClose: Date = set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: this.storeClose.hours, minutes: this.storeClose.minutes, seconds: 0, milliseconds: 0});
+  getHours(day: Date, isMilitaryTime: boolean): string[] {
+    var storeOpen: Date = set(new Date(), {
+      year: day.getFullYear(),
+      month: day.getMonth(),
+      date: day.getDate(),
+      hours: this.storeOpen.hours,
+      minutes: this.storeOpen.minutes,
+      seconds: 0,
+      milliseconds: 0,
+    });
+    var storeClose: Date = set(new Date(), {
+      year: day.getFullYear(),
+      month: day.getMonth(),
+      date: day.getDate(),
+      hours: this.storeClose.hours,
+      minutes: this.storeClose.minutes,
+      seconds: 0,
+      milliseconds: 0,
+    });
 
     var hours: string[] = [];
 
-    var count: number = 0
-    for(var i: Date = storeOpen; isBefore(i, storeClose) || isEqual(i, storeClose) ; i = add(i, {minutes: this.timeIntervalInMinutes})) {
-      hours.push(this.getHour(i));
+    var count: number = 0;
+    for (
+      var i: Date = storeOpen;
+      isBefore(i, storeClose) || isEqual(i, storeClose);
+      i = add(i, { minutes: this.timeIntervalInMinutes })
+    ) {
+      if(isMilitaryTime) hours.push(this.getHour(i));
+      else hours.push(this.get12Hour(i));
       count++;
-      if(count > 100) break;
+      if (count > 100) break;
     }
 
     return hours;
   }
 
   getDaysNextWeek(): Date[] {
+    var nextSunday: Date = set(new Date(), {
+      hours: this.storeClose.hours,
+      minutes: this.storeClose.minutes,
+      seconds: 0,
+      milliseconds: 0,
+    });
 
-    var nextSunday: Date = set(new Date(), {hours: this.storeClose.hours, minutes: this.storeClose.minutes, seconds: 0, milliseconds: 0});
-
-    while(!isSunday(nextSunday)) {
-      nextSunday = addDays(nextSunday,1);
+    while (!isSunday(nextSunday)) {
+      nextSunday = addDays(nextSunday, 1);
     }
     var dates: Date[] = [];
 
-    for(var i: number = 0; i < 7; i++) dates.push(addDays(nextSunday,i));
+    for (var i: number = 0; i < 7; i++) dates.push(addDays(nextSunday, i));
 
-    console.log(dates);
+
     return dates;
-
   }
- 
+
   public getEmployees(): void {
     this.employeeService.getEmployees().subscribe(
-    (responce : Employee[]) => {
-      this.employees = responce;
-    },
-    (error: HttpErrorResponse) => {
-      alert(error.message);
-    }
+      (responce: Employee[]) => {
+        this.employees = responce;
+      },
+      (error: HttpErrorResponse) => {
+        alert(error.message);
+      }
     );
   }
 
   public assignEmployeeColors(): void {
     let count: number = 0;
-    this.employees?.forEach(employee => {
-      if(count === 5) count = 0;
-       employee.color = this.colors[count]
-       count++;
+    this.employees?.forEach((employee) => {
+      if (count === 5) count = 0;
+      employee.color = this.colors[count];
+      count++;
     });
   }
+  
+  getShiftsByDay(day: Date) {
+    
+    var dayStart: Date = set(new Date(), {
+      year: day.getFullYear(),
+      month: day.getMonth(),
+      date: day.getDate(),
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    });
 
-  // public hasUnfilledRows(): boolean {
-  //   // TODO
-  // }
+    var dayEnd: Date = set(new Date(), {
+      year: day.getFullYear(),
+      month: day.getMonth(),
+      date: day.getDate(),
+      hours: 23,
+      minutes: 59,
+      seconds: 59,
+      milliseconds: 59,
+    });
 
+    var shifts: TimeRange[] = [];
 
+    this.timeRanges.forEach((tr) => {
+      if(tr.dateEnd == null || tr.dateStart == null) return;
+      if(this.isBetween(tr.dateEnd, dayStart, dayEnd)
+      || this.isBetween(tr.dateStart, dayStart, dayEnd)) {
+        shifts.push(tr);
+      }
+    });
+    
+    return shifts;
+  }
+
+  public totalHours(day: Date, employee: Employee): string {
+    var shifts: TimeRange[] = this.getShiftsByDay(day);
+    var numMinutes: number = 0;
+    shifts.forEach((shift) => {
+      if(shift.purpose != "shift") return;
+      if(shift.dateEnd == null || shift.dateStart == null) return;
+      if(shift.employeeId != employee.id) return;
+      numMinutes = differenceInMinutes(shift.dateEnd, shift.dateStart);
+    });
+
+    if(numMinutes > 6 * 60) numMinutes -= 30;
+    var numHours: number = Math.trunc(numMinutes / 60);
+    numMinutes = numMinutes - numHours * 60;
+
+    return numHours + "h " + numMinutes + "m"; 
+
+  }
 
   public colorButton(button: HTMLElement, color: string) {
-    button?.setAttribute('style', 'background: ' + color);
+    button?.setAttribute("style", "background: " + color);
   }
 
   public colorTable(employee: Employee, timeStamp: Date, timeRange: TimeRange) {
     //Check every button for an employee to see if the button is between timeRange start and timeRange end
-    this.getHours(timeStamp).forEach(time => {
-      const button = document.getElementById(employee.id+'-'+this.getDate(timeStamp)+'-'+time);
+    this.getHours(timeStamp, true).forEach((time) => {
+      const button = document.getElementById(
+        employee.id + "+" + this.getDate(timeStamp) + "-" + time
+      );
+      if (button == null) return;
 
+      var buttonTimeString: string = button.id.split("+")[1];
+      var buttonTime: Date = parse(
+        buttonTimeString,
+        "MM/dd/yyyy-H:mm",
+        new Date()
+      );
       
-
-      var buttonTime: Date = new Date(); //TODO
-      if(button == null) return;
-      if(this.isBetween(buttonTime, timeRange.dateStart!, timeRange.dateEnd!)) {
+      this.colorButton(button, "");
+      if (this.isBetween(buttonTime, timeRange.dateStart!, timeRange.dateEnd!)) {
         this.colorButton(button, employee.color);
       }
     });
-
   }
 
-  findEmployeeShiftIndex(employee: Employee, day: Date): number {
-    var purpose: string = "shift";
+  public updateSchedule() {
+    //for each cell in the schedule, color in or disable altered cells
+    
 
-    var index: number | undefined = this.timeRanges.findIndex(tr => (tr.employeeId == employee.id && tr.purpose == purpose));
+    this.timeRanges.forEach((timeRange) => {
+      if(timeRange.dateEnd == null || timeRange.dateStart == null) return;
+      var employeeID = timeRange.employeeId;
+      const dates: Date[] = this.getOpenHoursBetweenDates(timeRange.dateStart, timeRange.dateEnd);
 
-    if(index == -1) {
-      this.timeRanges.push({
-        id: undefined,
-        employeeId: employee.id,
-        dateStart: null,
-        dateEnd: null,
-        purpose: purpose
+      dates.forEach((date) => {
+        const button = document.getElementById(
+          employeeID + "+" + this.getDate(date) + "-" + this.getHour(date)
+        );
+        if(button == null) return;
+        
+        if(timeRange.purpose == "OFF") {
+          console.log(button);
+          button.classList.add('disabled');
+          button.innerHTML = "<i class=\"fas fa-times\"></i>";
+        }
+        
+      })
+
+
+      //then loop through the timestamps and alter the buttons
+
+    });
+
+    //To locate a single cell, you need 3 pieces of data
+    //Employee UUID
+    //Date eg. 3/12/2021
+    //Time eg. 16:30
+  }
+
+  getOpenHoursBetweenDates(dateStart: Date, dateEnd: Date): Date[] {
+
+    if(isBefore(dateEnd, dateStart)) {
+      var temp: Date = dateStart;
+      dateStart = dateEnd;
+      dateEnd = temp;
+    }
+    let minutesBetweenDates: number = Math.abs(differenceInMinutes(dateStart, dateEnd));
+
+    //dateStart minutes should be divisable by the time interval ie (Time interval 30m, then date start 10:15 NO)
+    while(dateStart.getMinutes() % this.timeIntervalInMinutes != 0) {
+      dateStart = add(dateStart, {minutes: 1});
+    };
+
+    var dates: Date[] = []
+
+
+
+    for(var i: number = 0; i <= minutesBetweenDates; i += this.timeIntervalInMinutes){ 
+
+      var date: Date = add(dateStart, {minutes: i});
+
+      var storeOpen: Date = set(new Date(), {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        date: date.getDate(),
+        hours: this.storeOpen.hours,
+        minutes: this.storeOpen.minutes,
+        seconds: 0,
+        milliseconds: 0,
       });
+      var storeClose: Date = set(new Date(), {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        date: date.getDate(),
+        hours: this.storeClose.hours,
+        minutes: this.storeClose.minutes,
+        seconds: 0,
+        milliseconds: 0,
+      });
+
+      
+      if(this.isBetween(date, storeOpen, storeClose) || date.getHours() == storeClose.getHours() && date.getMinutes() == storeClose.getMinutes()) dates.push(date);
     }
-    return this.timeRanges.findIndex(tr => (tr.employeeId == employee.id && tr.purpose == purpose));
+    
+
+    return dates;
   }
 
-  addTimeStampToShift(index: number, timeStamp: Date): void {
-
-    let todaysShift = this.timeRanges[index];
+  findEmployeeShift(employee: Employee, clickedTime: Date): TimeRange {
+    var purpose: string = "shift";
+    const newTimeShift: TimeRange = {
+      id: undefined,
+      employeeId: employee.id,
+      dateStart: null,
+      dateEnd: null,
+      purpose: purpose,
+    };
     
-    if(todaysShift.dateStart == null || todaysShift.dateEnd == null) {
+    var timeRange: TimeRange | undefined = this.timeRanges.find((targetShift) =>{
+      if(targetShift.employeeId == employee.id
+        && targetShift.purpose == purpose
+        && targetShift.dateStart != null 
+        && targetShift.dateEnd != null
+        && this.getDate(targetShift.dateStart) == this.getDate(clickedTime)
+        && this.getDate(targetShift.dateEnd) == this.getDate(clickedTime))
+      return targetShift;
+      return undefined;
+    });
+
+    if(timeRange == undefined) {
+      return newTimeShift;
+    } 
+    return timeRange;
+    
+  }
+
+  addTimeStampToShift(todaysShift: TimeRange, timeStamp: Date): void {
+    
+    var dayStart: Date = set(new Date(), {
+      year: timeStamp.getFullYear(),
+      month: timeStamp.getMonth(),
+      date: timeStamp.getDate(),
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    });
+
+    var dayEnd: Date = set(new Date(), {
+      year: timeStamp.getFullYear(),
+      month: timeStamp.getMonth(),
+      date: timeStamp.getDate(),
+      hours: 23,
+      minutes: 59,
+      seconds: 59,
+      milliseconds: 59,
+    });
+
+    
+
+    if (todaysShift.dateStart == null || todaysShift.dateEnd == null) {
       todaysShift.dateEnd = timeStamp;
       todaysShift.dateStart = timeStamp;
+      return;
     }
-    else if(isBefore(timeStamp, todaysShift.dateStart)) {
-      todaysShift.dateStart = timeStamp;
-    }
-    else if(isAfter(timeStamp, todaysShift.dateEnd)) {
-      todaysShift.dateEnd = timeStamp;
-    }
-
-  }
-
-  combineDayAndTime(day: Date, timeString:string): Date {
-    var time: Date = parse(timeString, 'h:mm', new Date());
     
-    return set(new Date(), {year: day.getFullYear(), month: day.getMonth(), date: day.getDate(), hours: time.getHours(), minutes: time.getMinutes(), seconds: 0, milliseconds: 0});
+
+
+    var insideClickedSegment: boolean = (this.isBetween(timeStamp , todaysShift.dateStart ,todaysShift.dateEnd));
+
+    if(insideClickedSegment) {
+      var distFromTop: number = Math.abs(differenceInMinutes(timeStamp, todaysShift.dateStart));
+      var distFromBot: number = Math.abs(differenceInMinutes(timeStamp, todaysShift.dateEnd));
+
+      var clickedTopHalf: boolean = distFromTop <= distFromBot;
+
+      if(isEqual(todaysShift.dateStart, todaysShift.dateEnd)) {
+        todaysShift.dateEnd = null;
+        todaysShift.dateStart = null;
+      }
+      else if(distFromTop == 0) todaysShift.dateStart = add(todaysShift.dateStart, {minutes: this.timeIntervalInMinutes});
+      else if(distFromBot == 0) todaysShift.dateEnd = sub(todaysShift.dateEnd, {minutes: this.timeIntervalInMinutes});
+      else if(clickedTopHalf) todaysShift.dateStart = add(todaysShift.dateStart, {minutes: distFromTop});
+      else todaysShift.dateEnd = sub(todaysShift.dateEnd, {minutes: distFromBot});
+    }
+    else { //Outside logic
+      if (isBefore(timeStamp, todaysShift.dateStart)) {
+        todaysShift.dateStart = timeStamp;
+      } else if (isAfter(timeStamp, todaysShift.dateEnd)) {
+        todaysShift.dateEnd = timeStamp;
+      }
+
+    }
+
   }
 
-  public onClickSchedule(employee: Employee, day: Date, time:string): void {
+  combineDayAndTime(day: Date, timeString: string): Date {
+    var time: Date = parse(timeString, "H:mm", new Date());
 
+    return set(new Date(), {
+      year: day.getFullYear(),
+      month: day.getMonth(),
+      date: day.getDate(),
+      hours: time.getHours(),
+      minutes: time.getMinutes(),
+      seconds: 0,
+      milliseconds: 0,
+    });
+  }
+
+  public onClickSchedule(employee: Employee, day: Date, time: string): void {
     this.assignEmployeeColors();
 
-    const button = document.getElementById(employee.id+'-'+this.getDate(day)+'-'+time);
-    if(button == null) return;
+    const button = document.getElementById(
+      employee.id + "+" + this.getDate(day) + "-" + time
+    );
+    if (button == null) return;
 
-    var timeStamp: Date = this.combineDayAndTime(day, time);
+    var clickedTime: Date = this.combineDayAndTime(day, time);
 
-    this.colorButton(button, employee.color);
-    
-    var index: number = this.findEmployeeShiftIndex(employee, timeStamp);
-    this.addTimeStampToShift(index, timeStamp);
-
-    console.log(this.timeRanges);
-      
-
-    // //Init if any values are null
-    // if(employee.scheduledDays == undefined) {
-    //   employee.scheduledDays = [{
-    //     day: day,
-    //     shiftStart: time,
-    //     shiftEnd: time,
-    //     disabled: false
-    //   }];
-    //   console.log(employee);
-    //   this.colorInTable(employee, day);
-    //   return;
-    // }
-
-    // var scheduledDay: Shift | undefined = employee.scheduledDays.find(sch => sch.day == day);
-    
-    // //Guard against uninitalized scheduleDay
-    // if(scheduledDay == null) {
-    //   employee.scheduledDays.push({
-    //     day: day,
-    //     shiftStart: time,
-    //     shiftEnd: time,
-    //     disabled: false
-    //   });
-    //   console.log(employee);
-    //   this.colorInTable(employee, day);
-    //   return; 
-    // }
-
-    // //Guard against uninitalized values
-    // if( scheduledDay.shiftEnd == null || scheduledDay.shiftStart == null) {
-    //   var schDay = employee.scheduledDays.find(sch => sch.day == day);
-    //   schDay!.shiftStart = time;
-    //   schDay!.shiftEnd = time;
-    //   console.log(employee);
-    //   this.colorInTable(employee, day);
-    //   return;
-    // }
-
-    // var insideClickedSegment: boolean = (scheduledDay.shiftStart <= time && time <= scheduledDay.shiftEnd);
-
+    const employeeShift: TimeRange = this.findEmployeeShift(
+      employee,
+      clickedTime
+    );
+    if(employeeShift.dateEnd == null) this.timeRanges.push(employeeShift);
     
 
-    // if(insideClickedSegment) { //Inside logic
-
-    //   var distFromTop: number = scheduledDay.shiftStart - time;
-    //   var distFromBot: number = time - scheduledDay.shiftEnd;
-    //   if(scheduledDay.shiftStart == scheduledDay.shiftEnd) {
-    //     scheduledDay.shiftEnd = null;
-    //     scheduledDay.shiftStart = null;
-    //   }
-    //   else if(scheduledDay.shiftStart == time) scheduledDay.shiftStart = scheduledDay.shiftStart + this.timeInterval;
-    //   else if(scheduledDay.shiftEnd == time) scheduledDay.shiftEnd = scheduledDay.shiftEnd - this.timeInterval;
-    //   else if(distFromTop <= distFromBot) scheduledDay.shiftEnd = scheduledDay.shiftEnd + distFromBot;
-    //   else scheduledDay.shiftStart = scheduledDay.shiftStart - distFromTop;
-    // }
-    // else { //Outside logic
-    //   var above: boolean = time - scheduledDay.shiftStart < 0;
-
-    //   if(above) {
-    //     scheduledDay.shiftStart = time;
-    //   }
-    //   else scheduledDay.shiftEnd = time;
-
-    // }
-    
+    this.addTimeStampToShift(employeeShift, clickedTime);
 
 
-    // console.log(employee);
-    // this.colorInTable(employee, day);
+    this.colorTable(employee, clickedTime, employeeShift);
   }
 
-  // public totalHours(employee: Employee, day: string): string {
-  //   var total: number = 0;
-
-  //   if(employee.scheduledDays == null) {
-  //     return "0 hours";
-  //   }
-    
-  //   var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
-
-  
-  //   if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null)
-  //     return 0 + " hours";
-  //   else if(scheduledDay?.shiftEnd ==  scheduledDay?.shiftStart) {
-  //     if(this.timeInterval == 1) {
-  //       return this.timeInterval + " hour";
-  //     }
-  //     else return this.timeInterval + " hours";
-  //   }
-
-
-  //   var adjustedShiftEnd: number = scheduledDay?.shiftEnd  + this.timeInterval;
-  //   var netHours: number = Math.abs(scheduledDay?.shiftStart - adjustedShiftEnd);
-  //   var terminatingString: string = " hours";
-  //   if(netHours == 1) {
-  //     terminatingString = " hour"
-  //   }
-
-  //   if(netHours > 6)
-  //     return netHours - .5 + terminatingString;
-
-
-  //   return Math.abs(netHours) + terminatingString;
-
-  // }
-
-  public parseTimeToString(time: number): string {
-    var minutes: number = time % 1;
-    var hours: number = time - minutes;
-
-    if(hours > 12) hours = hours - 12;
-
-    switch(minutes) {
-      default:
-        return(hours + ":00");
-      case .5:
-        return(hours + ":30");
-      case .25:
-        return(hours + ":15");
-      case .75:
-        return(hours + ":45");
-    }
+  timeRangeContainsNullValues(timeRange: TimeRange):boolean {
+    return(timeRange.dateStart == null || timeRange.dateEnd == null);
   }
 
   public formatShift(employee: Employee, day: Date): string {
-    
-    // var scheduledDay = employee.scheduledDays?.find(sch => sch.day == day);
+    var shift: TimeRange = this.findEmployeeShift(employee, day);
+    if(this.timeRangeContainsNullValues(shift)) return "";
 
-    // if(scheduledDay?.shiftStart == null || scheduledDay?.shiftEnd == null) return "";
-    
-    // if(scheduledDay?.shiftEnd == this.times[this.times.length-1]) return this.parseTimeToString(scheduledDay?.shiftStart) + "–cl";
-    // return this.parseTimeToString(scheduledDay?.shiftStart) + "–"+  this.parseTimeToString(scheduledDay?.shiftEnd);
-    return "unimplemented"
+    return format(shift.dateStart!, "h:mm") + "-" + format(shift.dateEnd!, "h:mm");
   }
-
-  cardVisable(day: Date): boolean {
-    return day == this.tab;
-  } 
 
   public getTimeRanges(): void {
     this.timeRangeService.getTimeRange().subscribe(
-    (responce : TimeRange[]) => {
-      responce.forEach(tr => {
-        tr.dateStart = new Date( tr.dateStart!.getTime() );
-        tr.dateEnd = new Date( tr.dateEnd!.getTime() );
-      })
-      this.timeRanges = responce;
-    },
-    (error: HttpErrorResponse) => {
-      alert(error.message);
-    }
+      (responce: TimeRange[]) => {
+        responce.forEach((tr) => {
+          if(tr.dateStart != null && tr.dateEnd != null) {
+            tr.dateStart = new Date(tr.dateStart);
+            tr.dateEnd = new Date(tr.dateEnd);
+          }
+        });
+        this.timeRanges = responce;
+        this.updateSchedule();
+      },
+      (error: HttpErrorResponse) => {
+        alert(error.message);
+      }
     );
   }
 
+  //============DATE FORMATTING==============
+
   public getDOTW(day: Date): string {
-    return format(day, 'EEEE');
+    return format(day, "EEEE");
   }
 
-  public getHour(day: Date ):string {
+  public getHour(day: Date): string {
+    return format(day, "H:mm");
+  }
+  
+  public get12Hour(day: Date): string {
     return format(day, "h:mm");
   }
 
   public isBetween(dateTest: Date, dateStart: Date, dateEnd: Date): boolean {
-    return isAfter(dateTest,dateStart) && isBefore(dateTest, dateEnd);
+    return (
+      (isAfter(dateTest, dateStart) && isBefore(dateTest, dateEnd)) ||
+      isEqual(dateTest, dateEnd) ||
+      isEqual(dateTest, dateStart)
+    );
   }
 
   public getDate(day: Date): string {
-    return format(day, "mm/dd/yyy");
+    return format(day, "MM/dd/yyy");
   }
+
+  // ===========NAV==============
+  public setTab(day: Date): void {
+    this.daysNextWeek.forEach((tabDay) => {
+      var tab = document.getElementById("nav-" + tabDay);
+      if (tabDay == day) tab?.classList.add("active");
+      else tab?.classList.remove("active");
+    });
+    this.updateSchedule();
+    this.tab = day;
+    
+  }
+
+  cardVisable(day: Date): boolean {
+    return day == this.tab;
+  }
+
 
 }
