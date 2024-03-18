@@ -51,8 +51,8 @@
 
           <!-- Button Grid  -->
           <div *ngFor="let time of times" class="btn-group" role="group">
-              <button *ngFor="let employee of employees" type="button" class="btn border-dark w-60" (click)="onClickSchedule(employee,time,day)" id="{{employee.id}}-{{time}}-{{day}}" title="{{employee.name}} {{parseTimeToString(time)}} {{day}}">
-                <fa-icon *ngIf='isTimeDisabled(employee, day, time)' [icon]="['fas','times']" ></fa-icon>
+              <button *ngFor="let employee of employees" type="button" class="btn border-dark" [disabled]='isTimeDisabled()'  (click)="onClickSchedule(employee,time,day)" id="{{employee.id}}-{{time}}-{{day}}">
+                <fa-icon *ngIf='isTimeDisabled()' [icon]="['fas','times']" ></fa-icon>
               </button>
           </div>
 
