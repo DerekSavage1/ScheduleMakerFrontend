@@ -1,29 +1,46 @@
-![Example Image](Example.png)
-
 # Schedule Maker
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.0.4.
+Schedule Maker is an application designed to streamline the process of creating employee schedules. Add your employees and start creating a scheudle with a visually intuitive schedule matrix.
 
-## Development server
+## Features
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+- **Employee Management:** Add new employees with detailed information including email, phone, etc.
+- **Visual Schedule Matrix:** Click on a day of the week to view a dynamic matrix, visually representing employee schedules and shift overlaps.
+- **Real-Time Updates:** The schedule automatically updates as you add people to each day, providing an up-to-date overview of the weekly schedule.
 
-## Code scaffolding
+## Installation
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+To get Schedule Maker up and running on your local system, follow these steps:
 
-## Build
+1. **Clone the repository**
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```
+git clone https://github.com/yourusername/schedule-maker.git
+cd schedule-maker
+```
 
-## Running unit tests
+2. **Install Dependencies**
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Assuming you have [Node.js](https://nodejs.org/) and [Angular CLI](https://angular.io/cli) installed, run:
 
-## Running end-to-end tests
+```
+npm install
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+3. **Serve the Application**
 
-## Further help
+```
+ng serve
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+After running `ng serve`, the app will be available at `http://localhost:4200/`. Open your browser and navigate to this address to start scheduling.
+
+## Usage
+
+1. **Start by clicking on a day of the week.** This opens up the schedule matrix for that day.
+2. **Visualize the employee schedule.** The matrix allows you to see how each shift overlaps with others, making it easy to identify any scheduling conflicts or coverage gaps.
+3. **Add employees to any day.** As you populate the day's schedule, the matrix updates in real-time to reflect changes.
+
+![Schedule Matrix Example](Example.png)
+
+_Example of the Schedule Matrix visualization._
